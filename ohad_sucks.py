@@ -9,9 +9,13 @@ from checkers_classes import (
     board,
     WIN,
     TILE_SIZE,
+    WIN_SIZE,
 )
 
 pygame.mixer.init()
+pygame.font.init()
+
+WIN_FONT = pygame.font.Font(os.path.join("Assets", "Calibri.ttf"), 120)
 
 PIECE_STEP_SOUND = pygame.mixer.Sound(os.path.join("Assets", "Piece_step.wav"))
 CAPTURE_SOUND = pygame.mixer.Sound(os.path.join("Assets", "Capture.wav"))
@@ -41,8 +45,26 @@ def draw_board():
                 )
 
 
+def win(is_white):
+    if is_white:
+        win_text = WIN_FONT.render("White Wins!", 1, "white")
+    else:
+        win_text = WIN_FONT.render("Black Wins!", 1, "white")
+    WIN.blit(
+        win_text,
+        (
+            WIN_SIZE[0] // 2 - win_text.get_width() // 2,
+            WIN_SIZE[1] // 2 - win_text.get_height(),
+        ),
+    )
+    pygame.display.update()
+    pygame.time.wait(3000)
+
+
 def starting_position():
     global board
+    # Breaks everything for some reason
+    # ! board = [[None for _ in range(8)] for _ in range(8)]
     for i in range(8):
         for j in range(8):
             if (i % 2 + j % 2) % 2 == 1:
@@ -86,6 +108,8 @@ def main():
                             except ValueError:
                                 pass
                             CAPTURE_SOUND.play()
+                            if White.instances == [] or Black.instances == []:
+                                win(white_turn)
                             Clear.instances.clear()
                             valid_moves = piece.root_piece.second_cap()
                             if valid_moves != []:

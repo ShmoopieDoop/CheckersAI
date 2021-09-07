@@ -61,6 +61,8 @@ class White(Piece):
     def find_valid(self):
         valid_moves = []
         try:
+            if self.y - 1 < 0:
+                raise IndexError
             if board[self.y - 1][self.x + 1] == None:
                 valid_moves.append({"coords": (self.x + 1, self.y - 1)})
             elif (
@@ -76,6 +78,8 @@ class White(Piece):
         except IndexError:
             pass
         try:
+            if self.y < 0 or self.x < 0:
+                raise IndexError
             if board[self.y - 1][self.x - 1] == None:
                 valid_moves.append({"coords": (self.x - 1, self.y - 1)})
             elif (
@@ -95,6 +99,8 @@ class White(Piece):
     def second_cap(self):
         valid_moves = []
         try:
+            if self.y - 2 < 0:
+                raise IndexError
             if (
                 type(board[self.y - 1][self.x + 1]) == Black
                 and board[self.y - 2][self.x + 2] == None
@@ -108,6 +114,8 @@ class White(Piece):
         except IndexError:
             pass
         try:
+            if self.y - 2 < 0 or self.x - 2 < 0:
+                raise IndexError
             if (
                 type(board[self.y - 1][self.x - 1]) == Black
                 and board[self.y - 2][self.x - 2] == None
@@ -134,6 +142,8 @@ class White(Piece):
         except IndexError:
             pass
         try:
+            if self.x - 2 < 0:
+                raise IndexError
             if (
                 type(board[self.y + 1][self.x - 1]) == Black
                 and board[self.y + 2][self.x - 2] == None
@@ -177,6 +187,8 @@ class Black(Piece):
         except IndexError:
             pass
         try:
+            if self.x < 0:
+                raise IndexError
             if board[self.y + 1][self.x - 1] == None:
                 valid_moves.append({"coords": (self.x - 1, self.y + 1)})
             elif (
@@ -196,6 +208,8 @@ class Black(Piece):
     def second_cap(self):
         valid_moves = []
         try:
+            if self.y - 2 < 0:
+                raise IndexError
             if (
                 type(board[self.y - 1][self.x + 1]) == White
                 and board[self.y - 2][self.x + 2] == None
@@ -209,6 +223,8 @@ class Black(Piece):
         except IndexError:
             pass
         try:
+            if self.y < 0 or self.x < 0:
+                raise IndexError
             if (
                 type(board[self.y - 1][self.x - 1]) == White
                 and board[self.y - 2][self.x - 2] == None
@@ -235,6 +251,8 @@ class Black(Piece):
         except IndexError:
             pass
         try:
+            if self.x < 0:
+                raise IndexError
             if (
                 type(board[self.y + 1][self.x - 1]) == White
                 and board[self.y + 2][self.x - 2] == None
