@@ -274,27 +274,3 @@ class Clear_White(Clear):
 class Clear_Black(Clear):
     def draw(self):
         WIN.blit(CLEAR_BLACK_PIECE_IMG, board_to_coords(self.x, self.y))
-
-
-def draw_board():
-    for i in range(8):
-        for j in range(8):
-            tile = pygame.Rect(
-                i * TILE_SIZE[0],
-                j * TILE_SIZE[1],
-                TILE_SIZE[0],
-                TILE_SIZE[1],
-            )
-            if i % 2 + j % 2 == 1:
-                pygame.draw.rect(
-                    WIN,
-                    (0, 50, 100),
-                    tile,
-                )
-
-            else:
-                pygame.draw.rect(
-                    WIN,
-                    (255, 242, 212),
-                    tile,
-                )
