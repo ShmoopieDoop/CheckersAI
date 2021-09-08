@@ -6,6 +6,10 @@ from checkers_classes import (
     Clear_Black,
     White,
     Black,
+    White_Pawn,
+    Black_Pawn,
+    White_King,
+    Black_King,
     board,
     WIN,
     TILE_SIZE,
@@ -69,9 +73,9 @@ def starting_position():
         for j in range(8):
             if (i % 2 + j % 2) % 2 == 1:
                 if i <= 2:
-                    board[i][j] = Black(j, i)
+                    board[i][j] = Black_Pawn(j, i)
                 if i >= 5:
-                    board[i][j] = White(j, i)
+                    board[i][j] = White_Pawn(j, i)
 
 
 def main():
@@ -116,6 +120,23 @@ def main():
                                 capturer = piece.root_piece
                                 multi_capture = True
                                 break
+                        if (
+                            type(piece.root_piece) == White_Pawn
+                            and piece.root_piece.y == 0
+                        ):
+                            board[piece.root_piece.y][piece.root_piece.x] = White_King(
+                                piece.root_piece.x, piece.root_piece.y
+                            )
+                            White.instances.remove(piece.root_piece)
+                        if (
+                            type(piece.root_piece) == Black_Pawn
+                            and piece.root_piece.y == 7
+                        ):
+                            board[piece.root_piece.y][piece.root_piece.x] = Black_King(
+                                piece.root_piece.x, piece.root_piece.y
+                            )
+                            Black.instances.remove(piece.root_piece)
+
                         white_turn = not white_turn
                         multi_capture = False
                 if white_turn:

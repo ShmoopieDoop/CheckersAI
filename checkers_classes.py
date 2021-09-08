@@ -19,6 +19,18 @@ CLEAR_BLACK_PIECE_IMG = pygame.image.load(
     os.path.join("Assets", "clear_black_piece.png")
 ).convert_alpha()
 CLEAR_BLACK_PIECE_IMG.set_colorkey("white")
+WHITE_KING_IMG = pygame.image.load(os.path.join("Assets", "white_king.png")).convert()
+WHITE_KING_IMG.set_colorkey("white")
+BLACK_KING_IMG = pygame.image.load(os.path.join("Assets", "black_king.png")).convert()
+BLACK_KING_IMG.set_colorkey("white")
+CLEAR_WHITE_KING_IMG = pygame.image.load(
+    os.path.join("Assets", "clear_white_king.png")
+).convert_alpha()
+CLEAR_WHITE_KING_IMG.set_colorkey("white")
+CLEAR_BLACK_KING_IMG = pygame.image.load(
+    os.path.join("Assets", "clear_black_king.png")
+).convert_alpha()
+CLEAR_BLACK_KING_IMG.set_colorkey("white")
 
 board = [[None for _ in range(8)] for _ in range(8)]
 
@@ -58,6 +70,16 @@ class White(Piece):
         super().__init__(x, y)
         self.__class__.instances.append(self)
 
+
+class Black(Piece):
+    instances = []
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.__class__.instances.append(self)
+
+
+class White_Pawn(White):
     def find_valid(self):
         valid_moves = []
         try:
@@ -66,7 +88,7 @@ class White(Piece):
             if board[self.y - 1][self.x + 1] == None:
                 valid_moves.append({"coords": (self.x + 1, self.y - 1)})
             elif (
-                type(board[self.y - 1][self.x + 1]) == Black
+                type(board[self.y - 1][self.x + 1]) == Black_Pawn
                 and board[self.y - 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -83,7 +105,7 @@ class White(Piece):
             if board[self.y - 1][self.x - 1] == None:
                 valid_moves.append({"coords": (self.x - 1, self.y - 1)})
             elif (
-                type(board[self.y - 1][self.x - 1]) == Black
+                type(board[self.y - 1][self.x - 1]) == Black_Pawn
                 and board[self.y - 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -102,7 +124,7 @@ class White(Piece):
             if self.y - 2 < 0:
                 raise IndexError
             if (
-                type(board[self.y - 1][self.x + 1]) == Black
+                type(board[self.y - 1][self.x + 1]) == Black_Pawn
                 and board[self.y - 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -117,7 +139,7 @@ class White(Piece):
             if self.y - 2 < 0 or self.x - 2 < 0:
                 raise IndexError
             if (
-                type(board[self.y - 1][self.x - 1]) == Black
+                type(board[self.y - 1][self.x - 1]) == Black_Pawn
                 and board[self.y - 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -130,7 +152,7 @@ class White(Piece):
             pass
         try:
             if (
-                type(board[self.y + 1][self.x + 1]) == Black
+                type(board[self.y + 1][self.x + 1]) == Black_Pawn
                 and board[self.y + 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -145,7 +167,7 @@ class White(Piece):
             if self.x - 2 < 0:
                 raise IndexError
             if (
-                type(board[self.y + 1][self.x - 1]) == Black
+                type(board[self.y + 1][self.x - 1]) == Black_Pawn
                 and board[self.y + 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -162,20 +184,14 @@ class White(Piece):
         WIN.blit(WHITE_PIECE_IMG, board_to_coords(self.x, self.y))
 
 
-class Black(Piece):
-    instances = []
-
-    def __init__(self, x, y):
-        super().__init__(x, y)
-        self.__class__.instances.append(self)
-
+class Black_Pawn(Black):
     def find_valid(self):
         valid_moves = []
         try:
             if board[self.y + 1][self.x + 1] == None:
                 valid_moves.append({"coords": (self.x + 1, self.y + 1)})
             elif (
-                type(board[self.y + 1][self.x + 1]) == White
+                type(board[self.y + 1][self.x + 1]) == White_Pawn
                 and board[self.y + 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -192,7 +208,7 @@ class Black(Piece):
             if board[self.y + 1][self.x - 1] == None:
                 valid_moves.append({"coords": (self.x - 1, self.y + 1)})
             elif (
-                type(board[self.y + 1][self.x - 1]) == White
+                type(board[self.y + 1][self.x - 1]) == White_Pawn
                 and board[self.y + 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -211,7 +227,7 @@ class Black(Piece):
             if self.y - 2 < 0:
                 raise IndexError
             if (
-                type(board[self.y - 1][self.x + 1]) == White
+                type(board[self.y - 1][self.x + 1]) == White_Pawn
                 and board[self.y - 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -226,7 +242,7 @@ class Black(Piece):
             if self.y < 0 or self.x < 0:
                 raise IndexError
             if (
-                type(board[self.y - 1][self.x - 1]) == White
+                type(board[self.y - 1][self.x - 1]) == White_Pawn
                 and board[self.y - 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -239,7 +255,7 @@ class Black(Piece):
             pass
         try:
             if (
-                type(board[self.y + 1][self.x + 1]) == White
+                type(board[self.y + 1][self.x + 1]) == White_Pawn
                 and board[self.y + 2][self.x + 2] == None
             ):
                 valid_moves.append(
@@ -254,7 +270,7 @@ class Black(Piece):
             if self.x < 0:
                 raise IndexError
             if (
-                type(board[self.y + 1][self.x - 1]) == White
+                type(board[self.y + 1][self.x - 1]) == White_Pawn
                 and board[self.y + 2][self.x - 2] == None
             ):
                 valid_moves.append(
@@ -269,6 +285,74 @@ class Black(Piece):
 
     def draw(self):
         WIN.blit(BLACK_PIECE_IMG, board_to_coords(self.x, self.y))
+
+
+class White_King(White):
+    def find_valid(self):
+        valid_moves = []
+        for i in range(min([7 - self.x, self.y])):
+            if type(board[self.y - i][self.x + i]) in (Black_Pawn, Black_King):
+                valid_moves.append({"coords": (self.y - i - 1, self.x + i + 1)})
+                break
+            if type(board[self.y - i][self.x + i]) in (White_Pawn, White_King):
+                break
+            try:
+                if self.y - 2 < 0:
+                    raise IndexError
+                if board[self.y - 1][self.x + 1] == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + 2, self.y - 2),
+                            "cap_piece": board[self.y - 1][self.x + 1],
+                        }
+                    )
+            except IndexError:
+                pass
+        for i in range(min([self.x, self.y])):
+            try:
+                if self.y - 2 < 0 or self.x - 2 < 0:
+                    raise IndexError
+                if board[self.y - 1][self.x - 1] == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y - 2),
+                            "cap_piece": board[self.y - 1][self.x - 1],
+                        }
+                    )
+            except IndexError:
+                pass
+        for i in range(min([7 - self.x, 7 - self.y])):
+            try:
+                if board[self.y + 1][self.x + 1] == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + 2, self.y + 2),
+                            "cap_piece": board[self.y + 1][self.x + 1],
+                        }
+                    )
+            except IndexError:
+                pass
+        for i in range(min([self.x, 7 - self.y])):
+            try:
+                if self.x - 2 < 0:
+                    raise IndexError
+                if board[self.y + 1][self.x - 1] == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y + 2),
+                            "cap_piece": board[self.y + 1][self.x - 1],
+                        }
+                    )
+            except IndexError:
+                pass
+        return valid_moves
+
+    def draw(self):
+        WIN.blit(WHITE_KING_IMG, board_to_coords(self.x, self.y))
+
+
+class Black_King(Black):
+    pass
 
 
 class Clear(Piece):
