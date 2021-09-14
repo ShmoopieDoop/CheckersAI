@@ -2,19 +2,15 @@ import pygame
 import os
 from checkers_classes import (
     Clear,
-    Clear_White,
-    Clear_Black,
-    White,
-    Black,
-    White_Pawn,
-    Black_Pawn,
-    White_King,
-    Black_King,
+    Pawn,
+    King,
     board,
     WIN,
     TILE_SIZE,
     WIN_SIZE,
 )
+
+# TODO: rewrite king class, change main file to conform to new classes
 
 pygame.mixer.init()
 pygame.font.init()
@@ -73,9 +69,9 @@ def starting_position():
         for j in range(8):
             if (i % 2 + j % 2) % 2 == 1:
                 if i <= 2:
-                    board[i][j] = Black_Pawn(j, i)
+                    board[i][j] = Pawn(j, i, "black")
                 if i >= 5:
-                    board[i][j] = White_Pawn(j, i)
+                    board[i][j] = Pawn(j, i, "white")
 
 
 def main():
@@ -83,36 +79,38 @@ def main():
     run = True
     white_turn = True
     multi_capture = False
+    instances = (Pawn.instances["black"], Pawn.instances["white"])
     starting_position()
     while run:
         WIN.fill("black")
         draw_board()
-        for piece in White.instances:
+        for piece in Pawn.instances["white"] + Pawn.instances["black"]:
             piece.draw()
-        for piece in Black.instances:
-            piece.draw()
-        for piece in Clear.instances:
+        for piece in Clear.instances["white"] + Clear.instances["black"]:
             piece.draw()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for piece in Clear.instances:
+                for piece in Clear.instances["white"] + Clear.instances["white"]:
                     if piece.collide():
                         PIECE_STEP_SOUND.play()
                         piece.root_piece.set_pos(piece.x, piece.y)
                         if piece.cap_piece != None:
                             board[piece.cap_piece.y][piece.cap_piece.x] = None
                             try:
-                                White.instances.remove(piece.cap_piece)
+                                Pawn.instances["white"].remove(piece.cap_piece)
                             except ValueError:
                                 pass
                             try:
-                                Black.instances.remove(piece.cap_piece)
+                                Pawn.instances["black"].remove(piece.cap_piece)
                             except ValueError:
                                 pass
                             CAPTURE_SOUND.play()
-                            if White.instances == [] or Black.instances == []:
+                            if (
+                                Pawn.instances["white"] == []
+                                or Pawn.instances["black"] == []
+                            ):
                                 win(white_turn)
                             Clear.instances.clear()
                             valid_moves = piece.root_piece.second_cap()
@@ -121,62 +119,70 @@ def main():
                                 multi_capture = True
                                 break
                         if (
-                            type(piece.root_piece) == White_Pawn
+                            type(piece.root_piece.color) == "white"
                             and piece.root_piece.y == 0
                         ):
-                            board[piece.root_piece.y][piece.root_piece.x] = White_King(
-                                piece.root_piece.x, piece.root_piece.y
+                            board[piece.root_piece.y][piece.root_piece.x] = King(
+                                piece.root_piece.x, piece.root_piece.y, "white"
                             )
-                            White.instances.remove(piece.root_piece)
+                            Pawn.instances["white"].remove(piece.root_piece)
                         if (
-                            type(piece.root_piece) == Black_Pawn
+                            type(piece.root_piece.color) == "color"
                             and piece.root_piece.y == 7
                         ):
-                            board[piece.root_piece.y][piece.root_piece.x] = Black_King(
-                                piece.root_piece.x, piece.root_piece.y
+                            board[piece.root_piece.y][piece.root_piece.x] = King(
+                                piece.root_piece.x, piece.root_piece.y, "black"
                             )
-                            Black.instances.remove(piece.root_piece)
+                            Pawn.instances["black"].remove(piece.root_piece)
 
                         white_turn = not white_turn
                         multi_capture = False
                 if white_turn:
                     if not multi_capture:
-                        for piece in White.instances:
+                        for piece in instances[white_turn]:
                             if piece.collide():
-                                Clear.instances.clear()
+                                Clear.instances["white"].clear()
+                                Clear.instances["black"].clear()
                                 valid_moves = piece.find_valid()
                                 for i in valid_moves:
-                                    Clear_White(i["coords"][0], i["coords"][1], piece)
+                                    Clear(
+                                        i["coords"][0], i["coords"][1], "white", piece
+                                    )
                                     if "cap_piece" in i:
-                                        Clear.instances[-1].set_cap_piece(
+                                        Clear.instances["white"][-1].set_cap_piece(
                                             i["cap_piece"]
                                         )
                                 break
                             else:
-                                Clear.instances.clear()
+                                Clear.instances["white"].clear()
+                                Clear.instances["black"].clear()
                     else:
                         for i in valid_moves:
-                            Clear_White(i["coords"][0], i["coords"][1], capturer)
-                            Clear.instances[-1].set_cap_piece(i["cap_piece"])
+                            Clear(i["coords"][0], i["coords"][1], "white", capturer)
+                            Clear.instances["white"][-1].set_cap_piece(i["cap_piece"])
                 else:
                     if not multi_capture:
-                        for piece in Black.instances:
+                        for piece in instances[white_turn]:
                             if piece.collide():
-                                Clear.instances.clear()
+                                Clear.instances["white"].clear()
+                                Clear.instances["black"].clear()
                                 valid_moves = piece.find_valid()
                                 for i in valid_moves:
-                                    Clear_Black(i["coords"][0], i["coords"][1], piece)
+                                    Clear(
+                                        i["coords"][0], i["coords"][1], "black", piece
+                                    )
                                     if "cap_piece" in i:
-                                        Clear.instances[-1].set_cap_piece(
+                                        Clear.instances["black"][-1].set_cap_piece(
                                             i["cap_piece"]
                                         )
                                 break
                             else:
-                                Clear.instances.clear()
+                                Clear.instances["white"].clear()
+                                Clear.instances["black"].clear()
                     else:
                         for i in valid_moves:
-                            Clear_Black(i["coords"][0], i["coords"][1], capturer)
-                            Clear.instances[-1].set_cap_piece(i["cap_piece"])
+                            Clear(i["coords"][0], i["coords"][1], "black", capturer)
+                            Clear.instances["black"][-1].set_cap_piece(i["cap_piece"])
         clock.tick(30)
         pygame.display.update()
 
