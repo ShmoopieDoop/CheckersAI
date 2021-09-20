@@ -32,8 +32,6 @@ CLEAR_BLACK_KING_IMG = pygame.image.load(
 ).convert_alpha()
 CLEAR_BLACK_KING_IMG.set_colorkey("white")
 
-board = [[None for _ in range(8)] for _ in range(8)]
-
 
 def board_to_coords(x: int, y: int):
     # Convert coordinates on the board to coordinates of the display (e.g. 2, 3 to 200, 400)
@@ -43,73 +41,34 @@ def board_to_coords(x: int, y: int):
     return x, y
 
 
+class Empty:
+    def __init__(self):
+        self.color = None
+
+
+board = [[Empty() for _ in range(8)] for _ in range(8)]
+pawn_king_instances = {"white": [], "black": []}
+
+
 class Piece:
-    instances = {"white": [], "black": []}
+    all_instances = {"white": [], "black": []}
 
     def __init__(self, x: int, y: int, color: str):
         self.x = x
         self.y = y
         self.color = color
         if color == "white":
-            self.__class__.instances["white"].append(self)
+            self.__class__.all_instances["white"].append(self)
         elif color == "black":
-            self.__class__.instances["black"].append(self)
+            self.__class__.all_instances["black"].append(self)
         self.rect = pygame.Rect((board_to_coords(self.x, self.y), (TILE_SIZE)))
 
     def set_pos(self, x, y):
-        board[self.y][self.x] = None
+        board[self.y][self.x] = Empty()
         self.x = x
         self.y = y
         board[self.y][self.x] = self
         self.rect.topleft = board_to_coords(x, y)
-
-    def collide(self):
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            return True
-        return False
-
-
-class Pawn(Piece):
-    instances = {"white": [], "black": []}
-
-    def __init__(self, x, y, color):
-        super().__init__(x, y, color)
-        if color == "white":
-            self.img = WHITE_PAWN_IMG
-            self.opp_color = "black"
-            self.__class__.instances["white"].append(self)
-        elif color == "black":
-            self.img = BLACK_PAWN_IMG
-            self.opp_color = "white"
-            self.__class__.instances["black"].append(self)
-
-    def find_valid(self) -> list:
-        valid_moves = []
-        direction = -1
-        crown_row = 0
-        if self.color == "black":
-            direction = 1
-            crown_row = 7
-        if self.x > 0:
-            if board[self.y + direction][self.x - 1] == None:
-                valid_moves.append({"coords": (self.x - 1, self.y + direction)})
-            elif self.x > 1 and abs(crown_row - self.y) > 1:
-                if (
-                    board[self.y + direction][self.x - 1].color == self.opp_color
-                    and board[self.y + direction * 2][self.x - 2] == None
-                ):
-                    valid_moves.append({"coords": (self.x - 2, self.y + direction * 2)})
-        if self.x < 7:
-            if board[self.y + direction][self.x + 1] == None:
-                valid_moves.append({"coords": (self.x + 1, self.y + direction)})
-            elif self.x < 6 and abs(crown_row - self.y) > 1:
-                if (
-                    board[self.y + direction][self.x + 1].color == self.opp_color
-                    and board[self.y + direction * 2][self.x + 2] == None
-                ):
-                    valid_moves.append({"coords": (self.x + 2, self.y + direction * 2)})
-        return valid_moves
 
     def second_cap(self) -> list:
         valid_moves = []
@@ -117,66 +76,213 @@ class Pawn(Piece):
             if self.x > 1:
                 if (
                     board[self.y - 1][self.x - 1].color == self.opp_color
-                    and board[self.y - 1 * 2][self.x - 2] == None
+                    and board[self.y - 2][self.x - 2].color == None
                 ):
-                    valid_moves.append({"coords": (self.x - 2, self.y - 1 * 2)})
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y - 2),
+                            "cap_piece": board[self.y - 1][self.x - 1],
+                        }
+                    )
             if self.x < 6:
                 if (
                     board[self.y - 1][self.x + 1].color == self.opp_color
-                    and board[self.y - 1 * 2][self.x - 2] == None
+                    and board[self.y - 2][self.x + 2].color == None
                 ):
-                    valid_moves.append({"coords": (self.x - 2, self.y - 1 * 2)})
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + 2, self.y - 2),
+                            "cap_piece": board[self.y - 1][self.x + 1],
+                        }
+                    )
         if self.y < 6:
             if self.x > 1:
                 if (
                     board[self.y + 1][self.x - 1].color == self.opp_color
-                    and board[self.y + 1 * 2][self.x - 2] == None
+                    and board[self.y + 2][self.x - 2].color == None
                 ):
-                    valid_moves.append({"coords": (self.x - 2, self.y + 1 * 2)})
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y + 2),
+                            "cap_piece": board[self.y + 1][self.x - 1],
+                        }
+                    )
             if self.x < 6:
                 if (
                     board[self.y + 1][self.x + 1].color == self.opp_color
-                    and board[self.y + 1 * 2][self.x - 2] == None
+                    and board[self.y + 2][self.x + 2].color == None
                 ):
-                    valid_moves.append({"coords": (self.x - 2, self.y + 1 * 2)})
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y + 2),
+                            "cap_piece": board[self.y + 1][self.x + 1],
+                        }
+                    )
         return valid_moves
+
+    def collide(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            return True
+        return False
 
     def draw(self):
         WIN.blit(self.img, board_to_coords(self.x, self.y))
 
 
-class King(Piece):
-    instances = {"white": [], "black": []}
+class Pawn(Piece):
+    pawn_instances = {"white": [], "black": []}
 
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
         if color == "white":
-            self.__class__.instances["white"].append(self)
-            self.img = WHITE_KING_IMG
+            self.img = WHITE_PAWN_IMG
+            self.opp_color = "black"
+            self.direction = -1
+            self.crown_row = 0
+            self.__class__.pawn_instances["white"].append(self)
+            pawn_king_instances["white"].append(self)
         elif color == "black":
-            self.__class__.instances["black"].append(self)
-            self.img = BLACK_KING_IMG
+            self.img = BLACK_PAWN_IMG
+            self.opp_color = "white"
+            self.direction = 1
+            self.crown_row = 7
+            self.__class__.pawn_instances["black"].append(self)
+            pawn_king_instances["black"].append(self)
 
-    def draw(self):
-        WIN.blit(self.img, board_to_coords(self.x, self.y))
+    def find_valid(self) -> list:
+        valid_moves = []
+        if self.x > 0:
+            if board[self.y + self.direction][self.x - 1].color == None:
+                valid_moves.append({"coords": (self.x - 1, self.y + self.direction)})
+            elif self.x > 1 and abs(self.crown_row - self.y) > 1:
+                if (
+                    board[self.y + self.direction][self.x - 1].color == self.opp_color
+                    and board[self.y + self.direction * 2][self.x - 2].color == None
+                ):
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - 2, self.y + self.direction * 2),
+                            "cap_piece": board[self.y + self.direction][self.x - 1],
+                        }
+                    )
+        if self.x < 7:
+            if board[self.y + self.direction][self.x + 1].color == None:
+                valid_moves.append({"coords": (self.x + 1, self.y + self.direction)})
+            elif self.x < 6 and abs(self.crown_row - self.y) > 1:
+                if (
+                    board[self.y + self.direction][self.x + 1].color == self.opp_color
+                    and board[self.y + self.direction * 2][self.x + 2].color == None
+                ):
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + 2, self.y + self.direction * 2),
+                            "cap_piece": board[self.y + self.direction][self.x + 1],
+                        }
+                    )
+        return valid_moves
+
+
+class King(Piece):
+    king_instances = {"white": [], "black": []}
+
+    def __init__(self, x, y, color):
+        super().__init__(x, y, color)
+        if color == "white":
+            self.img = WHITE_KING_IMG
+            self.__class__.king_instances["white"].append(self)
+            pawn_king_instances["white"].append(self)
+        elif color == "black":
+            self.img = BLACK_KING_IMG
+            self.__class__.king_instances["black"].append(self)
+            pawn_king_instances["black"].append(self)
+
+    def find_valid(self):
+        valid_moves = []
+        for i in range(min(self.x, self.y)):
+            if board[self.y - i - 1][self.x - i - 1] == self.color:
+                break
+            elif board[self.y - i - 1][self.x - i - 1] == self.opp_color:
+                if board[self.y - i - 2][self.x - i - 2].color == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - i - 2, self.y - i - 2),
+                            "cap_piece": board[self.y - i - 1][self.x - i - 1],
+                        }
+                    )
+                break
+            valid_moves.append(
+                {
+                    "coords": (self.x - i - 1, self.y - i - 1),
+                }
+            )
+        for i in range(min(7 - self.x, self.y)):
+            if board[self.y - i - 1][self.x + i + 1] == self.color:
+                break
+            elif board[self.y - i - 1][self.x + i + 1] == self.opp_color:
+                if board[self.y - i - 2][self.x + i + 2].color == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + i + 2, self.y - i - 2),
+                            "cap_piece": board[self.y - i - 1][self.x + i + 1],
+                        }
+                    )
+                break
+            valid_moves.append(
+                {
+                    "coords": (self.x + i + 1, self.y - i - 1),
+                }
+            )
+        for i in range(min(self.x, 7 - self.y)):
+            if board[self.y + i + 1][self.x - i - 1] == self.color:
+                break
+            elif board[self.y + i + 1][self.x - i - 1] == self.opp_color:
+                if board[self.y + i + 2][self.x - i - 2].color == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x - i - 2, self.y + i + 2),
+                            "cap_piece": board[self.y + i + 1][self.x - i - 1],
+                        }
+                    )
+                break
+            valid_moves.append(
+                {
+                    "coords": (self.x - i - 1, self.y + i + 1),
+                }
+            )
+        for i in range(min(7 - self.x, 7 - self.y)):
+            if board[self.y + i + 1][self.x + i + 1] == self.color:
+                break
+            elif board[self.y + i + 1][self.x + i + 1] == self.opp_color:
+                if board[self.y + i + 2][self.x + i + 2].color == None:
+                    valid_moves.append(
+                        {
+                            "coords": (self.x + i + 2, self.y + i + 2),
+                            "cap_piece": board[self.y + i + 1][self.x + i + 1],
+                        }
+                    )
+                break
+            valid_moves.append(
+                {
+                    "coords": (self.x + i + 1, self.y + i + 1),
+                }
+            )
+        return valid_moves
 
 
 class Clear(Piece):
-    instances = {"white": [], "black": []}
+    clear_instances = {"white": [], "black": []}
 
     def __init__(self, x, y, color, root_piece):
         super().__init__(x, y, color)
         if self.color == "white":
-            self.__class__.instances["white"].append(self)
+            self.__class__.clear_instances["white"].append(self)
             self.img = CLEAR_WHITE_PAWN_IMG
         elif self.color == "black":
-            self.__class__.instances["black"].append(self)
+            self.__class__.clear_instances["black"].append(self)
             self.img = CLEAR_BLACK_PAWN_IMG
         self.root_piece = root_piece
         self.cap_piece = None
 
     def set_cap_piece(self, cap_piece):
         self.cap_piece = cap_piece
-
-    def draw(self):
-        WIN.blit(self.img, board_to_coords(self.x, self.y))
