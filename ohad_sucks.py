@@ -6,6 +6,7 @@ from checkers_classes import (
     King,
     Empty,
     board,
+    pawn_king_instances,
     WIN,
     TILE_SIZE,
     WIN_SIZE,
@@ -81,16 +82,13 @@ def main():
     pawn: Pawn
     king: King
     clear: Clear
-    instances = (Pawn.pawn_instances["black"], Pawn.pawn_instances["white"])
     colors = {True: "white", False: "black"}
     starting_position()
     while run:
         WIN.fill("black")
         draw_board()
-        for pawn in Pawn.pawn_instances["white"] + Pawn.pawn_instances["black"]:
-            pawn.draw()
-        for king in King.king_instances["white"] + King.king_instances["black"]:
-            king.draw()
+        for piece in pawn_king_instances["white"] + pawn_king_instances["black"]:
+            piece.draw()
         for clear in Clear.clear_instances["white"] + Clear.clear_instances["black"]:
             clear.draw()
         for event in pygame.event.get():
@@ -105,11 +103,13 @@ def main():
                         clear.root_piece.set_pos(clear.x, clear.y)
                         if clear.cap_piece != None:
                             board[clear.cap_piece.y][clear.cap_piece.x] = Empty()
-                            instances[not white_turn].remove(clear.cap_piece)
+                            pawn_king_instances[colors[not white_turn]].remove(
+                                clear.cap_piece
+                            )
                             CAPTURE_SOUND.play()
                             if (
-                                Pawn.pawn_instances["white"] == []
-                                or Pawn.pawn_instances["black"] == []
+                                pawn_king_instances["white"] == []
+                                or pawn_king_instances["black"] == []
                             ):
                                 win(white_turn)
                             Clear.clear_instances["white"].clear()
@@ -120,19 +120,22 @@ def main():
                                 multi_capture = True
                                 break
                         white_turn = not white_turn
-                        if clear.root_piece.y == clear.root_piece.crown_row:
+                        if (
+                            type(clear.root_piece) == Pawn
+                            and clear.root_piece.y == clear.root_piece.crown_row
+                        ):
                             board[clear.root_piece.y][clear.root_piece.x] = King(
                                 clear.root_piece.x,
                                 clear.root_piece.y,
                                 clear.root_piece.color,
                             )
-                            Pawn.pawn_instances[clear.root_piece.color].remove(
+                            pawn_king_instances[clear.root_piece.color].remove(
                                 clear.root_piece
                             )
                         multi_capture = False
                         break
                 if not multi_capture:
-                    for piece in instances[white_turn]:
+                    for piece in pawn_king_instances[colors[white_turn]]:
                         if piece.collide():
                             Clear.clear_instances["white"].clear()
                             Clear.clear_instances["black"].clear()

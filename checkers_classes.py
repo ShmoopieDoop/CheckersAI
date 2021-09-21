@@ -48,19 +48,18 @@ class Empty:
 
 board = [[Empty() for _ in range(8)] for _ in range(8)]
 pawn_king_instances = {"white": [], "black": []}
+all_instances = {"white": [], "black": []}
 
 
 class Piece:
-    all_instances = {"white": [], "black": []}
-
     def __init__(self, x: int, y: int, color: str):
         self.x = x
         self.y = y
         self.color = color
         if color == "white":
-            self.__class__.all_instances["white"].append(self)
+            all_instances["white"].append(self)
         elif color == "black":
-            self.__class__.all_instances["black"].append(self)
+            all_instances["black"].append(self)
         self.rect = pygame.Rect((board_to_coords(self.x, self.y), (TILE_SIZE)))
 
     def set_pos(self, x, y):
@@ -131,23 +130,19 @@ class Piece:
 
 
 class Pawn(Piece):
-    pawn_instances = {"white": [], "black": []}
-
     def __init__(self, x, y, color):
         super().__init__(x, y, color)
         if color == "white":
             self.img = WHITE_PAWN_IMG
-            self.opp_color = "black"
+            self.opp_color: str = "black"
             self.direction = -1
             self.crown_row = 0
-            self.__class__.pawn_instances["white"].append(self)
             pawn_king_instances["white"].append(self)
         elif color == "black":
             self.img = BLACK_PAWN_IMG
-            self.opp_color = "white"
+            self.opp_color: str = "white"
             self.direction = 1
             self.crown_row = 7
-            self.__class__.pawn_instances["black"].append(self)
             pawn_king_instances["black"].append(self)
 
     def find_valid(self) -> list:
@@ -190,19 +185,21 @@ class King(Piece):
         super().__init__(x, y, color)
         if color == "white":
             self.img = WHITE_KING_IMG
+            self.opp_color: str = "black"
             self.__class__.king_instances["white"].append(self)
             pawn_king_instances["white"].append(self)
         elif color == "black":
             self.img = BLACK_KING_IMG
+            self.opp_color: str = "black"
             self.__class__.king_instances["black"].append(self)
             pawn_king_instances["black"].append(self)
 
     def find_valid(self):
         valid_moves = []
         for i in range(min(self.x, self.y)):
-            if board[self.y - i - 1][self.x - i - 1] == self.color:
+            if board[self.y - i - 1][self.x - i - 1].color == self.color:
                 break
-            elif board[self.y - i - 1][self.x - i - 1] == self.opp_color:
+            elif board[self.y - i - 1][self.x - i - 1].color == self.opp_color:
                 if board[self.y - i - 2][self.x - i - 2].color == None:
                     valid_moves.append(
                         {
@@ -217,9 +214,9 @@ class King(Piece):
                 }
             )
         for i in range(min(7 - self.x, self.y)):
-            if board[self.y - i - 1][self.x + i + 1] == self.color:
+            if board[self.y - i - 1][self.x + i + 1].color == self.color:
                 break
-            elif board[self.y - i - 1][self.x + i + 1] == self.opp_color:
+            elif board[self.y - i - 1][self.x + i + 1].color == self.opp_color:
                 if board[self.y - i - 2][self.x + i + 2].color == None:
                     valid_moves.append(
                         {
@@ -234,9 +231,9 @@ class King(Piece):
                 }
             )
         for i in range(min(self.x, 7 - self.y)):
-            if board[self.y + i + 1][self.x - i - 1] == self.color:
+            if board[self.y + i + 1][self.x - i - 1].color == self.color:
                 break
-            elif board[self.y + i + 1][self.x - i - 1] == self.opp_color:
+            elif board[self.y + i + 1][self.x - i - 1].color == self.opp_color:
                 if board[self.y + i + 2][self.x - i - 2].color == None:
                     valid_moves.append(
                         {
@@ -251,9 +248,9 @@ class King(Piece):
                 }
             )
         for i in range(min(7 - self.x, 7 - self.y)):
-            if board[self.y + i + 1][self.x + i + 1] == self.color:
+            if board[self.y + i + 1][self.x + i + 1].color == self.color:
                 break
-            elif board[self.y + i + 1][self.x + i + 1] == self.opp_color:
+            elif board[self.y + i + 1][self.x + i + 1].color == self.opp_color:
                 if board[self.y + i + 2][self.x + i + 2].color == None:
                     valid_moves.append(
                         {
