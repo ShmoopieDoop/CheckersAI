@@ -1,16 +1,6 @@
 import pygame
 import os
-from checkers_classes import (
-    Clear,
-    Pawn,
-    King,
-    Empty,
-    board,
-    pawn_king_instances,
-    WIN,
-    TILE_SIZE,
-    WIN_SIZE,
-)
+from checkers_classes import *
 
 pygame.mixer.init()
 pygame.font.init()
@@ -64,7 +54,7 @@ def win(is_white):
 def starting_position():
     global board
     # Breaks everything for some reason
-    # ! board = [[None for _ in range(8)] for _ in range(8)]
+    # ! board = [[Empty() for _ in range(8)] for _ in range(8)]
     for i in range(8):
         for j in range(8):
             if (i % 2 + j % 2) % 2 == 1:
@@ -79,8 +69,7 @@ def main():
     run = True
     white_turn = True
     multi_capture = False
-    pawn: Pawn
-    king: King
+    piece: Piece
     clear: Clear
     colors = {True: "white", False: "black"}
     starting_position()
@@ -135,17 +124,17 @@ def main():
                         multi_capture = False
                         break
                 if not multi_capture:
-                    for piece in pawn_king_instances[colors[white_turn]]:
-                        if piece.collide():
+                    for selected_piece in pawn_king_instances[colors[white_turn]]:
+                        if selected_piece.collide():
                             Clear.clear_instances["white"].clear()
                             Clear.clear_instances["black"].clear()
-                            valid_moves = piece.find_valid()
+                            valid_moves = selected_piece.find_valid()
                             for i in valid_moves:
                                 Clear(
                                     i["coords"][0],
                                     i["coords"][1],
                                     colors[white_turn],
-                                    piece,
+                                    selected_piece,
                                 )
                                 if "cap_piece" in i:
                                     Clear.clear_instances[colors[white_turn]][

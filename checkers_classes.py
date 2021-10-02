@@ -113,7 +113,7 @@ class Piece:
                 ):
                     valid_moves.append(
                         {
-                            "coords": (self.x - 2, self.y + 2),
+                            "coords": (self.x + 2, self.y + 2),
                             "cap_piece": board[self.y + 1][self.x + 1],
                         }
                     )
@@ -190,7 +190,7 @@ class King(Piece):
             pawn_king_instances["white"].append(self)
         elif color == "black":
             self.img = BLACK_KING_IMG
-            self.opp_color: str = "black"
+            self.opp_color: str = "white"
             self.__class__.king_instances["black"].append(self)
             pawn_king_instances["black"].append(self)
 
@@ -200,7 +200,11 @@ class King(Piece):
             if board[self.y - i - 1][self.x - i - 1].color == self.color:
                 break
             elif board[self.y - i - 1][self.x - i - 1].color == self.opp_color:
-                if board[self.y - i - 2][self.x - i - 2].color == None:
+                if (
+                    self.y - i - 2 >= 0
+                    and self.x - i - 2 >= 0
+                    and board[self.y - i - 2][self.x - i - 2].color == None
+                ):
                     valid_moves.append(
                         {
                             "coords": (self.x - i - 2, self.y - i - 2),
@@ -217,7 +221,11 @@ class King(Piece):
             if board[self.y - i - 1][self.x + i + 1].color == self.color:
                 break
             elif board[self.y - i - 1][self.x + i + 1].color == self.opp_color:
-                if board[self.y - i - 2][self.x + i + 2].color == None:
+                if (
+                    self.y - i - 2 >= 0
+                    and self.x + i + 2 <= 7
+                    and board[self.y - i - 2][self.x + i + 2].color == None
+                ):
                     valid_moves.append(
                         {
                             "coords": (self.x + i + 2, self.y - i - 2),
@@ -234,7 +242,11 @@ class King(Piece):
             if board[self.y + i + 1][self.x - i - 1].color == self.color:
                 break
             elif board[self.y + i + 1][self.x - i - 1].color == self.opp_color:
-                if board[self.y + i + 2][self.x - i - 2].color == None:
+                if (
+                    self.y + i + 2 <= 7
+                    and self.x - i - 2 >= 0
+                    and board[self.y + i + 2][self.x - i - 2].color == None
+                ):
                     valid_moves.append(
                         {
                             "coords": (self.x - i - 2, self.y + i + 2),
@@ -251,7 +263,11 @@ class King(Piece):
             if board[self.y + i + 1][self.x + i + 1].color == self.color:
                 break
             elif board[self.y + i + 1][self.x + i + 1].color == self.opp_color:
-                if board[self.y + i + 2][self.x + i + 2].color == None:
+                if (
+                    self.y + i + 2 <= 7
+                    and self.x + i + 2 <= 7
+                    and board[self.y + i + 2][self.x + i + 2].color == None
+                ):
                     valid_moves.append(
                         {
                             "coords": (self.x + i + 2, self.y + i + 2),
